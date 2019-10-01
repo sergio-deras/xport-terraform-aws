@@ -1,6 +1,8 @@
 aws_profile       = "default"
 aws_region        = "us-east-1"
 
+access_cidr       ="0.0.0.0/0" 
+
 db_instance_class = "db.t2.micro"
 dbname		        = "my_db"
 dbuser		        = "my_db_user"

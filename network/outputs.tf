@@ -10,16 +10,21 @@ output "web_sg" {
   value = "${aws_security_group.web_sg}"
 }
 
-output "rds_sg" {
-  value = "${aws_security_group.RDS}"
-}
-
 output "app_sg" {
   value = "${aws_security_group.app_sg}"
 }
 
+output "rds_sg" {
+  value = "${aws_security_group.RDS}"
+}
+
+
 output "web_subnet" {
   value = "${aws_subnet.web_subnet}"
+}
+
+output "app_subnet" {
+  value = "${aws_subnet.app_subnet}"
 }
 
 output "rds1_subnet" {

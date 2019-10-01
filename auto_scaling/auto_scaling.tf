@@ -2,9 +2,10 @@
 # AutoScaling
 
 resource "aws_launch_template" "web_launch_template" {
-  name          = "Web_launch_template" 
-  image_id      = "${var.dev_ami}"
-  instance_type = "${var.dev_instance_type}"   
+  name                   = "Web_launch_template" 
+  image_id               = "${var.dev_ami}"
+  instance_type          = "${var.dev_instance_type}"   
+  vpc_security_group_ids = ["${var.security_group}"]
 }
 
 resource "aws_autoscaling_group" "web_as_group" {

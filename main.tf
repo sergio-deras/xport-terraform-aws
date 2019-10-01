@@ -17,6 +17,7 @@ module "network" {
 module "auto_scaling" {
   source            = "./auto_scaling"
   subnet            = "${module.network.web_subnet}"
+  security_group    = "${module.network.web_sg.id}"
   dev_instance_type = "${var.dev_instance_type}"
   dev_ami           = "${var.dev_ami}"
 }
@@ -35,8 +36,8 @@ module "name" {
   public_key_path   = "${var.public_key_path}"
   dev_instance_type = "${var.dev_instance_type}"
   dev_ami           = "${var.dev_ami}"
-  security_group_id = "${module.network.web_sg.id}"
-  subnet_id         = "${module.network.web_subnet.id}"
+  security_group_id = "${module.network.app_sg.id}"
+  subnet_id         = "${module.network.app_subnet.id}"
 }
 
 #RDS
