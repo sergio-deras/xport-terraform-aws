@@ -4,6 +4,21 @@ provider "aws" {
 
 data "aws_availability_zones" "available" {}
 
+
+module "auto_scaling" {
+  source              = "./auto_scaling"
+  availability_zone_a = "${data.aws_availability_zones.available.names[0]}"
+  dev_instance_type   = "${var.dev_instance_type}"
+}
+
+module "load_balancer" {
+  source         = "./load_balancer"
+  security_group = "${aws_security_group.web_sg.id}"
+  subnets        = ["${aws_subnet.rds1.id}", "${aws_subnet.rds2.id}"]
+  http_port      = "${var.http_port}"
+  vpc_id         = "${aws_vpc.vpc.id}"
+}
+
 # VPC
 resource "aws_vpc" "vpc" {
   cidr_block = "${var.cidrs["vpc"]}"
@@ -216,42 +231,10 @@ resource "aws_instance" "dev" {
 }
 
 
-# ALB
-resource "aws_alb" "web_alb" {
-  name            = "web-alb"
-  security_groups = ["${aws_security_group.web_sg.id}"]
-  subnets         = ["${aws_subnet.rds1.id}", "${aws_subnet.rds2.id}"]
-
-  tags = {
-    Name = "Web ALB"
-  }
-}
-
-resource "aws_alb_listener" "web_alb_http" {  
-  load_balancer_arn = "${aws_alb.web_alb.arn}"  
-  port              = "${var.http_port}"  
-  protocol          = "HTTP"
-  
-  default_action {    
-    target_group_arn = "${aws_alb_target_group.web_alb_http.arn}"
-    type             = "forward"  
-  }
-}
-
-resource "aws_alb_target_group" "web_alb_http" {
-  port        = "${var.http_port}"  
-  protocol    = "HTTP"
-  vpc_id      = "${aws_vpc.vpc.id}"
-  target_type = "instance"
-
-  tags = {
-    Name = "Web ALB Target Group"
-  }
-}
 
 resource "aws_autoscaling_attachment" "alb_asg_attachment" {
-  alb_target_group_arn   = "${aws_alb_target_group.web_alb_http.arn}"
-  autoscaling_group_name = "${aws_autoscaling_group.web_as_group.id}"
+  alb_target_group_arn   = "${module.load_balancer.web_alb_target_group.arn}"
+  autoscaling_group_name = "${module.auto_scaling.web_as_group.id}"
 }
 
 # AutoScaling
@@ -267,40 +250,3 @@ resource "aws_launch_template" "web_launch_template" {
   } 
 }
 */
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"] # Canonical
-}
-
-resource "aws_launch_configuration" "as_conf" {
-  name          = "web_config"
-  image_id      = "${data.aws_ami.ubuntu.id}"
-  instance_type = "${var.dev_instance_type}"
-}
-resource "aws_autoscaling_group" "web_as_group" {
-  availability_zones = ["${data.aws_availability_zones.available.names[0]}"]
-  desired_capacity   = 1
-  max_size           = 1
-  min_size           = 1
-
-  launch_configuration = "${aws_launch_configuration.as_conf.name}"
-}
-
-#-------OUTPUTS ------------
-
-output "Database_Name" {
-  value = "${var.dbname}"
-}
-
-#Show ELB endpoint
