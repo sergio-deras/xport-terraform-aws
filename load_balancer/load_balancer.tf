@@ -1,12 +1,8 @@
 # ALB
 resource "aws_alb" "web_alb" {
-  name            = "web-alb"
+  name            = "LabALB"
   security_groups = ["${var.security_group}"]
   subnets         = ["${var.subnets[0]}", "${var.subnets[1]}"]
-
-  tags = {
-    Name = "Web ALB"
-  }
 }
 
 resource "aws_alb_listener" "web_alb_http" {  
@@ -21,12 +17,9 @@ resource "aws_alb_listener" "web_alb_http" {
 }
 
 resource "aws_alb_target_group" "web_alb_http" {
+  name        = "WebALBTargetGroup"
   port        = "${var.http_port}"  
   protocol    = "HTTP"
   vpc_id      = "${var.vpc_id}"
   target_type = "instance"
-
-  tags = {
-    Name = "Web ALB Target Group"
-  }
 }

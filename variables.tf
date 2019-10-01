@@ -1,6 +1,6 @@
 variable "aws_region" {}
 variable "aws_profile" {}
-variable "localip" {}
+variable "access_cidr" {}
 variable "db_instance_class" {}
 variable "dbname" {}
 variable "dbuser" {}
